@@ -1,0 +1,4 @@
+DirectoryIndex disabled
+RewriteEngine on
+RewriteBase /
+RewriteRule ^(.*) http://localhost:{{gitea_port}}/$1 [proxy,last]

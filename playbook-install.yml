@@ -13,17 +13,17 @@
   #################################
   ## create directories
   #################################
+  - name: create directory bin
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      path: "/home/pacs/{{pac}}/users/{{user}}/bin"
+      state: directory
   - name: create directory etc
     become: yes
     become_user: "{{pac}}-{{user}}"
     file:
       path: "/home/pacs/{{pac}}/users/{{user}}/etc"
-      state: directory
-  - name: create directory var/tmp
-    become: yes
-    become_user: "{{pac}}-{{user}}"
-    file:
-      path: "/home/pacs/{{pac}}/users/{{user}}/var/tmp"
       state: directory
   - name: create directory var/log
     become: yes
@@ -37,39 +37,78 @@
     file:
       path: "/home/pacs/{{pac}}/users/{{user}}/var/run"
       state: directory
-
-  #################################
-  ## install requirements
-  #################################
-  - name: Install node.js
-    import_tasks: tasks/hs_nodejs.yml
-
-  - name: Install ruby
-    import_tasks: tasks/hs_ruby.yml
+  - name: create directory custom conf
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      path: "/home/pacs/{{pac}}/users/{{user}}/custom/conf"
+      state: directory
 
   ##################################
   ## install gitea
   ##################################
+  - name: get gitea gpg signature
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    shell: |
+      gpg --keyserver keys.openpgp.org --recv 7C9E68152594688862D62AF62D9AE806EC1592E2 || (rm -Rf .gnupg && exit -1)
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/.gnupg"
 
-  # TODO
+  - name: install gitea
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    shell: |
+      wget --no-verbose -O gitea https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64 || exit -1
+      wget --no-verbose https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64.asc || exit -1
+      chmod +x gitea || exit -1
+      gpg --verify gitea-{{gitea_release}}-linux-amd64.asc gitea || (rm -f gitea-{{gitea_release}}-linux-amd64.asc gitea && exit -1)
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/gitea-{{gitea_release}}-linux-amd64.asc"
 
   ##################################
   ## configuration
   ##################################
+  - name: upload gitea configuration
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/custom/conf" src="templates/app.ini" mode=0600
 
-  # TODO
+  ##################################
+  ## other software configuration
+  ##################################
+  - name: upload monit configuration
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/.monitrc" src="templates/monitrc" mode=0600
 
-  ######################
-  ## initialise instance
-  ######################
+  - name: upload logrotate configuration
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/.logrotate" src="templates/logrotate" mode=0600
 
-  # TODO
+  - name: upload start script
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/bin" src="templates/gitea-start.sh" mode=0700
+  - name: upload stop script
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/bin" src="templates/gitea-stop.sh" mode=0700
 
   ########################
   ## setup the apache site
   ########################
-
-  # TODO
+  - name: upload .htaccess file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template:
+      src: "templates/htaccess"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/.htaccess"
 
   ####################################
   ## install cron jobs
@@ -81,6 +120,14 @@
       name: "start monit at reboot"
       special_time: reboot
       job: rm -f $HOME/var/run/* && /usr/bin/monit -c "$HOME/.monitrc"
+  - name: run logrotate once a day
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    cron:
+      name: "logrotate"
+      minute: "{{random_minute}}"
+      hour: "1"
+      job: "/usr/sbin/logrotate -s $HOME/.logrotate.state $HOME/.logrotate"
 
   ##############################################
   ## start services via monit

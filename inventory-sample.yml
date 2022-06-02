@@ -7,6 +7,14 @@ gitea:
       domain: gitea.example.org
       user: gitea
       password: testpassw0rd_changeme
+      lfs_jwt_secret: todo
+      jwt_secret: todo
+      internal_token: todo
+      secret_key: todo
+
+      gitea_port: 11111
+      random_minute: 12
 
       # see https://github.com/go-gitea/gitea/releases
       gitea_release: 1.16.8
+
