@@ -15,6 +15,10 @@ gitea:
       gitea_port: 11111
       random_minute: 12
 
+      admin_user: administrator
+      admin_email: admin@example.org
+      admin_pwd: testpassw0rd2_changeme
+
       # see https://github.com/go-gitea/gitea/releases
       gitea_release: 1.16.8
 

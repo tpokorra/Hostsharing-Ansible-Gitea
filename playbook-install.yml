@@ -52,10 +52,11 @@
     become_user: "{{pac}}-{{user}}"
     shell: |
       gpg --keyserver keys.openpgp.org --recv 7C9E68152594688862D62AF62D9AE806EC1592E2 || (rm -Rf .gnupg && exit -1)
+      touch .ansible_gpg_key
     args:
       executable: /bin/bash
       chdir: "/home/pacs/{{pac}}/users/{{user}}"
-      creates: "/home/pacs/{{pac}}/users/{{user}}/.gnupg"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_gpg_key"
 
   - name: install gitea
     become: yes
@@ -77,6 +78,18 @@
     become: yes
     become_user: "{{pac}}-{{user}}"
     template: dest="/home/pacs/{{pac}}/users/{{user}}/custom/conf" src="templates/app.ini" mode=0600
+
+  - name: init database and create admin user
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    shell: |
+      ./gitea migrate || exit -1
+      ./gitea admin user create --admin --username {{admin_user}} --password {{admin_pwd}} --email {{admin_email}} || exit -1
+      touch .ansible_user_created
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_user_created"
 
   ##################################
   ## other software configuration
