@@ -1,0 +1,27 @@
+gitea:
+  hosts:
+    {{pac}}-{{user}}:
+      ansible_ssh_host: {{pac}}.hostsharing.net
+      ansible_ssh_user: {{pac}}
+      pac: {{pac}}
+      domain: {{domain}}
+      user: {{username}}
+      password: {{password}}
+
+      lfs_jwt_secret: {{Random32DigitsLetters1}}
+      jwt_secret: {{Random32DigitsLetters2}}
+      internal_token: {{Random32DigitsLetters3}}
+      secret_key: {{Random32DigitsLetters4}}
+
+      gitea_port: {{port1}}
+      random_minute: {{RandomMinute}}
+
+      admin_user: gitea_admin
+      admin_email: initialadmin@solidcharity.com
+      admin_pwd: {{initial_password}}
+
+      # see https://github.com/go-gitea/gitea/releases
+      gitea_release: 1.16.8
+
+      SaasActivationPassword: {{SaasActivationPassword}}
+      SaasInstanceStatus: {{SaasInstanceStatus}}

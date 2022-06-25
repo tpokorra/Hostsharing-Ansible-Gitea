@@ -1,0 +1,21 @@
+---
+- hosts: gitea
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+  - name: Update Gitea
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    shell: |
+      ./bin/gitea-stop.sh || exit -1
+      sleep 3
+      wget -O gitea https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64 || exit -1
+      wget https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64.asc || exit -1
+      chmod +x gitea
+      gpg --verify gitea-{{gitea_release}}-linux-amd64.asc gitea || exit -1
+      ./bin/gitea-start.sh || exit -1
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/"
