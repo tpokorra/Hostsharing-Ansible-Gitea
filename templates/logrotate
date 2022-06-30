@@ -12,4 +12,10 @@
     compress
     missingok
  }
- 
+ /home/pacs/{{pac}}/users/{{user}}/var/log/router.log {
+    copytruncate
+    daily
+    rotate 7
+    compress
+    missingok
+ }

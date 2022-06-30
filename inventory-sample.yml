@@ -5,6 +5,7 @@ gitea:
       ansible_ssh_user: xyz00
       pac: xyz00
       domain: gitea.example.org
+      custom_domain: gitea.example.org
       user: gitea
       password: testpassw0rd_changeme
       lfs_jwt_secret: todo
