@@ -27,9 +27,10 @@ try {
     // $statement = $pdo->prepare($update_email_sql);
     // $statement->execute(array(':email' => $USER_EMAIL_ADDRESS));
 
-    $stmt_update_user = 'update public."user" set email=:email, is_active=true where id=1';
-    $statement = $pdo->prepare($stmt_update_user);
-    $statement->execute(array(':email' => $USER_EMAIL_ADDRESS));
+    // TODO: this does not work yet. You don't get a password reset email
+    //$stmt_update_user = 'update public."user" set email=:email, is_active=true where id=1';
+    //$statement = $pdo->prepare($stmt_update_user);
+    //$statement->execute(array(':email' => $USER_EMAIL_ADDRESS));
 }
 catch (Exception $e) {
     // echo 'Exception caught: ',  $e->getMessage(), "\n";
