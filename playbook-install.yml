@@ -19,6 +19,12 @@
     file:
       path: "/home/pacs/{{pac}}/users/{{user}}/bin"
       state: directory
+  - name: create directory data
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      path: "/home/pacs/{{pac}}/users/{{user}}/data"
+      state: directory
   - name: create directory etc
     become: yes
     become_user: "{{pac}}-{{user}}"
@@ -90,6 +96,51 @@
       executable: /bin/bash
       chdir: "/home/pacs/{{pac}}/users/{{user}}"
       creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_user_created"
+
+  #################################
+  ## setup the data directory
+  #################################
+  - name: Check for HDD storage
+    stat:
+      path: /home/storage/{{pac}}/users/{{user}}
+    register: hdd_storage
+  - name: create repos directory on storage
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      path: "/home/storage/{{pac}}/users/{{user}}/repos"
+      state: directory
+      mode: 0744
+      recurse: no
+    when: hdd_storage.stat.exists
+
+  - name: create symbolic link for repos to storage
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      src: "/home/storage/{{pac}}/users/{{user}}/repos"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/repos"
+      state: link
+    when: hdd_storage.stat.exists
+
+  - name: create lfs directory on storage
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      path: "/home/storage/{{pac}}/users/{{user}}/lfs"
+      state: directory
+      mode: 0744
+      recurse: no
+    when: hdd_storage.stat.exists
+
+  - name: create symbolic link for lfs to storage
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    file:
+      src: "/home/storage/{{pac}}/users/{{user}}/lfs"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/data/lfs"
+      state: link
+    when: hdd_storage.stat.exists
 
   ##################################
   ## other software configuration
