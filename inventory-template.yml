@@ -1,6 +1,6 @@
 gitea:
   hosts:
-    {{pac}}-{{user}}:
+    {{pac}}-{{username}}:
       ansible_ssh_host: {{pac}}.hostsharing.net
       ansible_ssh_user: {{pac}}
       pac: {{pac}}
@@ -22,7 +22,7 @@ gitea:
       admin_pwd: {{initial_password}}
 
       # see https://github.com/go-gitea/gitea/releases
-      gitea_release: 1.16.8
+      gitea_release: 1.16.9
 
       SaasActivationPassword: {{SaasActivationPassword}}
       SaasInstanceStatus: {{SaasInstanceStatus}}
