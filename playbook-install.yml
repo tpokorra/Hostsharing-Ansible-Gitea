@@ -76,7 +76,7 @@
   - name: Download gitea binary from proxy
     become: yes
     get_url:
-      url: {{url_proxy}}/gitea-{{gitea_release}}-linux-amd64
+      url: "{{url_proxy}}/gitea-{{gitea_release}}-linux-amd64"
       dest: /home/pacs/{{pac}}/users/{{user}}/gitea
       mode: '0755'
     when: url_proxy is defined
