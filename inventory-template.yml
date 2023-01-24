@@ -22,7 +22,7 @@ gitea:
       admin_pwd: {{initial_password}}
 
       # see https://github.com/go-gitea/gitea/releases
-      gitea_release: 1.17.3
+      gitea_release: 1.18.3
 
       SaasActivationPassword: {{SaasActivationPassword}}
       SaasInstanceStatus: {{SaasInstanceStatus}}
