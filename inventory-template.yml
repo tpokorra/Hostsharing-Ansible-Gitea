@@ -26,3 +26,5 @@ gitea:
 
       SaasActivationPassword: {{SaasActivationPassword}}
       SaasInstanceStatus: {{SaasInstanceStatus}}
+
+      url_proxy: https://proxy.solidcharity.com

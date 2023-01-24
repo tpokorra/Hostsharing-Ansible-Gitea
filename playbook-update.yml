@@ -1,20 +1,48 @@
 ---
 - hosts: gitea
+  become_user: "{{pac}}-{{user}}"
   vars:
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
 
-  - name: Update Gitea
+  - name: Stop Gitea
     become: yes
-    become_user: "{{pac}}-{{user}}"
     shell: |
       ./bin/gitea-stop.sh || exit -1
       sleep 3
-      wget -O gitea https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64 || exit -1
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/"
+
+  - name: Download gitea binary directly
+    become: yes
+    get_url:
+      url: https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64
+      dest: /home/pacs/{{pac}}/users/{{user}}/gitea
+      mode: '0755'
+    when: url_proxy is not defined
+
+  - name: Download gitea binary from proxy
+    become: yes
+    get_url:
+      url: {{url_proxy}}/gitea-{{gitea_release}}-linux-amd64
+      dest: /home/pacs/{{pac}}/users/{{user}}/gitea
+      mode: '0755'
+    when: url_proxy is defined
+
+  - name: Validate Gitea binary
+    become: yes
+    shell: |
       wget https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64.asc || exit -1
-      chmod +x gitea
       gpg --verify gitea-{{gitea_release}}-linux-amd64.asc gitea || exit -1
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/"
+
+  - name: Start Gitea
+    become: yes
+    shell: |
       ./bin/gitea-start.sh || exit -1
     args:
       executable: /bin/bash

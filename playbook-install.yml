@@ -1,5 +1,6 @@
 ---
 - hosts: gitea
+  become_user: "{{pac}}-{{user}}"
   vars:
     ansible_python_interpreter: /usr/bin/python3
     # see https://docs.ansible.com/ansible/latest/user_guide/become.html#risks-of-becoming-an-unprivileged-user
@@ -64,14 +65,26 @@
       chdir: "/home/pacs/{{pac}}/users/{{user}}"
       creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_gpg_key"
 
-  - name: install gitea
+  - name: Download gitea binary directly
     become: yes
-    become_user: "{{pac}}-{{user}}"
+    get_url:
+      url: https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64
+      dest: /home/pacs/{{pac}}/users/{{user}}/gitea
+      mode: '0755'
+    when: url_proxy is not defined
+
+  - name: Download gitea binary from proxy
+    become: yes
+    get_url:
+      url: {{url_proxy}}/gitea-{{gitea_release}}-linux-amd64
+      dest: /home/pacs/{{pac}}/users/{{user}}/gitea
+      mode: '0755'
+    when: url_proxy is defined
+
+  - name: Validate Gitea binary
+    become: yes
     shell: |
-      wget --no-verbose -O gitea https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64 || exit -1
-      # wget --no-verbose -O gitea https://proxy.solidcharity.com/index.php?file=gitea-{{gitea_release}}-linux-amd64 || exit -1
       wget --no-verbose https://dl.gitea.io/gitea/{{gitea_release}}/gitea-{{gitea_release}}-linux-amd64.asc || exit -1
-      chmod +x gitea || exit -1
       gpg --verify gitea-{{gitea_release}}-linux-amd64.asc gitea || (rm -f gitea-{{gitea_release}}-linux-amd64.asc gitea && exit -1)
     args:
       executable: /bin/bash
