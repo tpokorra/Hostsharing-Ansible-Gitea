@@ -9,11 +9,6 @@ gitea:
       user: {{username}}
       password: {{password}}
 
-      lfs_jwt_secret: {{Random32DigitsLetters1}}
-      jwt_secret: {{Random32DigitsLetters2}}
-      internal_token: {{Random32DigitsLetters3}}
-      secret_key: {{Random32DigitsLetters4}}
-
       gitea_port: {{port1}}
       random_minute: {{RandomMinute}}
 

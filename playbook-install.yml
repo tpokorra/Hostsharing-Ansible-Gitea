@@ -8,8 +8,8 @@
     ansible_remote_tmp: ~/.ansible/tmp
 
   tasks:
-  - name: Create user, domain and database
-    import_tasks: tasks/hs_basis.yml
+  #- name: Create user, domain and database
+  #  import_tasks: tasks/hs_basis.yml
 
   #################################
   ## create directories
@@ -98,6 +98,23 @@
     become: yes
     become_user: "{{pac}}-{{user}}"
     template: dest="/home/pacs/{{pac}}/users/{{user}}/custom/conf" src="templates/app.ini" mode=0600
+
+  # see https://docs.gitea.io/en-us/command-line/#generate
+  - name: generate secrets and insert into config file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    shell: |
+      SECRET=`./gitea generate secret SECRET_KEY`
+      sed -i "s/^SECRET_KEY .*/SECRET_KEY = $SECRET/g" ~/custom/conf/app.ini
+      SECRET=`./gitea generate secret JWT_SECRET`
+      sed -i "s/^JWT_SECRET .*/JWT_SECRET = $SECRET/g" ~/custom/conf/app.ini
+      SECRET=`./gitea generate secret JWT_SECRET`
+      sed -i "s/^LFS_JWT_SECRET .*/LFS_JWT_SECRET = $SECRET/g" ~/custom/conf/app.ini
+      SECRET=`./gitea generate secret INTERNAL_TOKEN`
+      sed -i "s/^INTERNAL_TOKEN .*/INTERNAL_TOKEN = $SECRET/g" ~/custom/conf/app.ini
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}"
 
   - name: init database and create admin user
     become: yes
